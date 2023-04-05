@@ -1,5 +1,6 @@
 scpt ='''
-    property test : {args}
+    property test : 1
+    {args}set test to 0
     tell application "spotify"
         if test = 1 then
         play track "spotify:track:622qBEeu9xL0aIXLUypQbS"
