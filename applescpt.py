@@ -1,3 +1,5 @@
+from subprocess import Popen, PIPE
+
 scpt ='''
     property test : 1
     {args}set test to 0
@@ -10,29 +12,36 @@ scpt ='''
     end tell
     '''
 scpt2 ='''
+set folderPath to "{path}"
+set exportPath to "{target}"
+
 tell application "Pixelmator Pro"
-	-- Open a prompt that lets you pick multiple Pixelmator Pro files to process 
-	-- and save references to all those images in the originalImages variable
-	set originalImages to choose file with prompt Â
-		"Please select the images to process:" with multiple selections allowed
-	-- Open a prompt to choose the location where the files should be exported 
-	set exportLocation to choose folder with prompt Â
-		"Please select where you'd like export the images:"
-	-- Start a repeat loop that loops over each image
-	repeat with a from 1 to number of originalImages
-		-- Open the current image in the loop
-		set currentImage to open item a of originalImages
-		-- Apply the auto white balance adjustments
-		enhance currentImage
-		-- Apply denoising
-		-- denoise currentImage
-		-- Export the images to the location chosen previously as JPEG files
-		export currentImage to file ((exportLocation as text) & Â
-			name of currentImage & "-edited" & ".JPEG") as JPEG with properties {compression factor:100}
-		-- Close the current image without saving
-		close currentImage without saving
+	set originalImages to list folder folderPath without invisibles
+	repeat with currentImage in originalImages
+		set currentImageFile to (folderPath & currentImage) as POSIX file
+		set openedImage to open currentImageFile
+		enhance openedImage
+		{denoise}denoise openedImage
+		{superres}super resolution openedImage
+		set currentImage to currentImage as text
+		set timestamp to do shell script "date +%Y%m%d_%H%M%S"
+		set fileName to currentImage & "_" & timestamp & ".jpeg"
+		set exportLocation to exportPath & "/" & fileName
+		export openedImage to exportLocation as JPEG with properties {compression}
+		close openedImage without saving
 	end repeat
-	display notification (number of originalImages as text) & Â
-		" images have been successfully edited." with title "Auto WB and Auto Lightness"
 end tell
 '''
+
+if __name__ == '__main__':
+	path = '/Users/ouslan/Downloads/test/'
+	target = '/Users/ouslan/Downloads/target/'
+	script = scpt2.format(
+				path=path,
+				target=target,
+				denoise='-- ',
+				superres='-- ',
+				compression='{compression factor:100}')
+	p = Popen(['osascript', '-'], stdin=PIPE, stdout=PIPE, stderr=PIPE, universal_newlines=True)
+	stdout, stderr = p.communicate(script)
+	

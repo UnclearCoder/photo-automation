@@ -44,38 +44,41 @@ class Camera:
         return self.date
 
 class Process(Camera):
-    def __init__(self, path, target, copy):
+    def __init__(self, path, target, copy, superres=False):
         self.target = target
         self.path = path
         self.copy = copy
+        self.superres = superres
         self.files = []
         self.iso = {}
         self.date = {}
-        self.dir = ['enhance', 'denoise', 'superres','denoise_superres']
+        self.dir = ['enhance', 'denoise', 'superres','denoise_superres', 'finished']
 
     def mkdir(self):
         os.chdir = self.path
         for i in self.dir:
             os.mkdir(self.target + '/' + i)
     
-    def move(self,super=False):
+    def move(self):
         self.get_images()
         self.get_iso()
         self.get_date()
-        if super == False:
+        if self.superres == False:
             for i in self.iso:
                 if self.iso[i] > 400:
-                    shutil.move(self.path + '/' + i, self.target + '/denoise/' + str(self.iso[i]) + '_' + str(self.date[i]) + '.CR2')
+                    shutil.move(self.path + '/' + i, self.target + '/denoise/' + str(i))
                 else:
-                    shutil.move(self.path + '/' + i, self.target + '/enhance/' + str(self.iso[i]) + '_' + str(self.date[i]) + '.CR2')
+                    shutil.move(self.path + '/' + i, self.target + '/enhance/' + str(i))
         else:
             for i in self.iso:
                 if self.iso[i] > 400:
-                    shutil.move(self.path + '/' + i, self.target + '/denoise_superres/' + str(self.iso[i]) + '_' + str(self.date[i]) + '.CR2')
+                    shutil.move(self.path + '/' + i, self.target + '/denoise_superres/' + str(i))
                 else:
-                    shutil.move(self.path + '/' + i, self.target + '/superres/' + str(self.iso[i]) + '_' + str(self.date[i]) + '.CR2')
+                    shutil.move(self.path + '/' + i, self.target + '/superres/' + str(i))
     def rmdir(self):
         for i in self.dir:
+            if i == 'finished':
+                continue
             for file in os.listdir(self.target + '/' + i):
                 src = os.path.join(self.target + '/' + i, file)
                 dst = os.path.join(self.copy, file)
@@ -89,5 +92,5 @@ if __name__ == '__main__':
     copy = '/Users/ouslan/Downloads/finished'
     pro = Process(path, target, copy)
     pro.mkdir()
-    pro.move(super=True)
+    pro.move()
     pro.rmdir()
