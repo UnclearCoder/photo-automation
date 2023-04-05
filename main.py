@@ -41,8 +41,29 @@ class Auto:
 
 
 if __name__ == '__main__':
-    path = '/Users/ouslan/Downloads/test/'
-    target = '/Users/ouslan/Downloads/target/'
-    copy = '/Users/ouslan/Downloads/finished/'
-    auto = Auto(path, target, copy)
-    auto.main()
+    while True:
+        path = input('Enter path to folder: ')
+        if os.path.exists(path) == False:
+            print('Path does not exist')
+            continue
+        target = input('Enter path to target folder: ')
+        if os.path.exists(target) == False:
+            print('Path does not exist')
+            continue
+        copy = input('Enter path to copy folder: ')
+        if os.path.exists(copy) == False:
+            print('Path does not exist')
+            continue
+        superres = input('Superres? (y/n): ')
+        if superres == 'y':
+            superres = True
+        else:
+            superres = False
+        try:
+            auto = Auto(path, target, copy, superres)
+            auto.main()
+            print('Done')
+        except:
+            print('Error: Please try again!')
+            print('Make sure the paths are correct and the folders are empty.')
+            print('If error persists, please contact the developer.')
